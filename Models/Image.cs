@@ -10,7 +10,7 @@ namespace Task.Models
 
 
         //start relations
-        public ToDo ToDo { get; set; }
+        public virtual ToDo ToDo { get; set; }
         public int ToDoId { get; set; }
     }
 }

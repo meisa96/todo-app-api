@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Proxies;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -34,7 +35,10 @@ namespace TaskAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<DataContext>(x => x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<DataContext>(x => {
+                x.UseLazyLoadingProxies();
+                x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+            });
             services.AddControllersWithViews()
                 .AddNewtonsoftJson(options =>
                 {
@@ -44,7 +48,6 @@ namespace TaskAPI
             ) ;
             services.AddControllers();
             services.AddCors();
-            services.AddMvc(op=>op.EnableEndpointRouting = false);
             services.Configure<CloudinarySettings>(Configuration.GetSection("CloudinarySettings"));
             services.AddAutoMapper(typeof(Startup));
             services.AddScoped<IAuthRepository, AuthRepository>();
@@ -89,9 +92,18 @@ namespace TaskAPI
 
             app.UseRouting();
             app.UseCors(x => x.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+            app.UseAuthentication(); // Must be after UseRouting()
+            app.UseAuthorization(); // Must be after UseAuthentication()            
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute(
+                    name: "spa-fallback",
+                    pattern: "{controller=Fallback}/{action=Index}/{id?}");
 
-            app.UseAuthentication();
-            app.UseMvc();
+                endpoints.MapFallbackToController("Index", "Fallback");
+            });
 
 
         }

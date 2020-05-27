@@ -31,15 +31,14 @@ namespace Task.Data
 
         public async Task<ToDo> GetToDo(int todoid, int userId)
         {
-            var todo = await _context.ToDos.Include(p => p.Images)
-            .FirstOrDefaultAsync(u => u.Id == todoid && u.UserId == userId);
+            var todo = await _context.ToDos.FirstOrDefaultAsync(u => u.Id == todoid && u.UserId == userId);
 
             return todo;
         }
 
         public async Task<PagedList<ToDo>> GetToDos(PageParams pageParams, int userId)
         {
-            var todos = _context.ToDos.Include(p => p.Images).Where(x=>x.UserId == userId).ToList().OrderByDescending(x => x.DateTime).GroupBy(x => x.DateTime >= DateTime.Now).ToList();
+            var todos = _context.ToDos.Where(x=>x.UserId == userId).ToList().OrderByDescending(x => x.DateTime).GroupBy(x => x.DateTime >= DateTime.Now).ToList();
             var todosToReturn = new List<ToDo>();
             foreach (IGrouping<bool, ToDo> group in todos)
             {

@@ -15,7 +15,7 @@ namespace Task.Models
         public DateTime DateTime { get; set; }
 
         //Relations//
-        public User User { get; set; }
+        public virtual User User { get; set; }
         public int UserId { get; set; }
         public virtual ICollection<Image> Images { get; set; }
     }
